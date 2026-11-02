@@ -709,6 +709,118 @@
       right: 14px;
     }
 
+  
+    /* ========== 우측 하단 페이지 번호 더블클릭 → 대사창 아래쪽 직사각형 칸(34px) 내 얇은 척도 바 ========== */
+    .scene-counter {
+      pointer-events: auto;
+      cursor: pointer;
+      padding: 6px 8px;
+      margin: -6px -8px;
+      z-index: 120;
+    }
+
+    .scene-progress-wrap {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 860px;
+      height: 34px; /* 대사창 아래쪽 직사각형 칸(182px~216px, 높이 34px) 정중앙 배치 */
+      z-index: 118;
+      pointer-events: auto;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      user-select: none;
+      touch-action: none;
+    }
+
+    .dialog-wrap .scene-progress-wrap {
+      left: calc(50% - 3px); /* .dialog-wrap 우측 6px 확장에 맞춘 스테이지 정중앙 정렬 */
+    }
+
+    .scene-progress-wrap.open {
+      display: flex;
+    }
+
+    .scene-progress-wrap.dragging {
+      cursor: grabbing;
+    }
+
+    .scene-progress-bar {
+      position: relative;
+      width: 100%;
+      height: 8px; /* 대사창 하단 직사각형 칸 안에 들어가는 얇은 척도 바 */
+      background: rgba(75, 15, 95, 0.38) url('02_motions/progress_bar.png') no-repeat center / 100% 100%;
+      overflow: hidden;
+      border-radius: 4px;
+      transform-origin: 50% 50%;
+      transition: filter 0.18s ease, transform 0.22s cubic-bezier(0.2, 0.8, 0.25, 1);
+    }
+
+    .scene-progress-wrap:hover .scene-progress-bar,
+    .scene-progress-wrap.dragging .scene-progress-bar {
+      transform: scaleY(1.35);
+      filter: brightness(1.25);
+    }
+
+    .scene-progress-hover {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: calc(var(--hover-ratio, 0) * 100%);
+      background: rgba(230, 200, 255, 0.22);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.18s ease;
+    }
+
+    .scene-progress-wrap:hover .scene-progress-hover {
+      opacity: 1;
+    }
+
+    .scene-progress-wrap.dragging .scene-progress-hover {
+      opacity: 0;
+    }
+
+    .scene-progress-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 10px;
+      background: rgba(75, 15, 95, 0.55) url('02_motions/progress_gauge.png') repeat-x left center / auto 100%;
+      transition: width 0.25s cubic-bezier(0.2, 0.8, 0.25, 1);
+    }
+
+    .scene-progress-wrap.dragging .scene-progress-fill {
+      transition: none;
+    }
+
+    .scene-progress-fill::after {
+      content: '';
+      position: absolute;
+      top: 1px;
+      bottom: 1px;
+      right: 0;
+      width: 3px;
+      border-radius: 2px;
+      background: rgba(255, 240, 255, 0.9);
+      opacity: 0;
+      transition: opacity 0.18s ease;
+    }
+
+    .scene-progress-wrap:hover .scene-progress-fill::after,
+    .scene-progress-wrap.dragging .scene-progress-fill::after {
+      opacity: 1;
+      animation: progressMarkerPulse 1.2s ease-in-out infinite;
+    }
+
+    @keyframes progressMarkerPulse {
+      0%, 100% { opacity: 1; }
+      50%      { opacity: 0.45; }
+    }
   </style>
 </head>
 <body>
@@ -2312,23 +2424,135 @@
         // 대화창 맨 아래 줄 또는 대화창 없는 화면의 최상단 레이어에 '현재장면/70' 번호 표기 자동 부착 (대기화면 제외)
         if (n !== 1) { // 대기화면(Scene 1) 제외
           const displayNum = Math.max(1, n - 1);
-          const dialogWraps = el.querySelectorAll('.dialog-wrap');
-          if (dialogWraps.length > 0) {
-            dialogWraps.forEach((dw) => {
-              if (!dw.querySelector('.scene-counter')) {
-                const counterEl = document.createElement('div');
-                counterEl.className = 'scene-counter';
-                counterEl.textContent = `${displayNum}/70`;
-                dw.appendChild(counterEl);
-              }
-            });
-          } else {
-            if (!el.querySelector('.scene-counter')) {
+          const navList = [];
+          for (let k = 2; k <= 20; k++) {
+            if (window.SCENES[k]) navList.push({ key: k, pageNum: k - 1 });
+          }
+          const curIdx = Math.max(0, navList.findIndex((item) => item.key === n));
+          const maxIdx = Math.max(1, navList.length - 1);
+          const ratio = curIdx / maxIdx;
+          const fillWidth = (curIdx === maxIdx) ? '100%' : `${Math.max(10, Math.round(10 + (860 - 10) * ratio))}px`;
+
+          const attachCounterAndProgress = (container) => {
+            if (!container.querySelector('.scene-counter')) {
               const counterEl = document.createElement('div');
               counterEl.className = 'scene-counter';
               counterEl.textContent = `${displayNum}/70`;
-              el.appendChild(counterEl);
+              counterEl.title = '더블클릭하여 페이지 이동 척도바 열기/닫기';
+              ['mousedown', 'pointerdown', 'click'].forEach((ev) => {
+                counterEl.addEventListener(ev, (e) => e.stopPropagation());
+              });
+              counterEl.addEventListener('dblclick', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                window.__SCENE_PROGRESS_OPEN__ = !window.__SCENE_PROGRESS_OPEN__;
+                stage.querySelectorAll('.scene-progress-wrap').forEach((w) => {
+                  w.classList.toggle('open', !!window.__SCENE_PROGRESS_OPEN__);
+                });
+              });
+              container.appendChild(counterEl);
             }
+            if (!container.querySelector('.scene-progress-wrap')) {
+              const wrapEl = document.createElement('div');
+              wrapEl.className = 'scene-progress-wrap' +
+                (window.__SCENE_PROGRESS_OPEN__ ? ' open' : '') +
+                (window.__SCENE_PROGRESS_DRAGGING__ ? ' dragging' : '');
+              if (typeof window.__SCENE_PROGRESS_HOVER_RATIO__ === 'number') {
+                wrapEl.style.setProperty('--hover-ratio', window.__SCENE_PROGRESS_HOVER_RATIO__);
+              }
+              wrapEl.innerHTML = `
+                <div class="scene-progress-bar">
+                  <div class="scene-progress-hover"></div>
+                  <div class="scene-progress-fill" style="width: ${fillWidth};"></div>
+                </div>
+              `;
+              const barEl = wrapEl.querySelector('.scene-progress-bar');
+              const updateHover = (e) => {
+                const rect = barEl.getBoundingClientRect();
+                if (rect.width <= 0) return;
+                const r = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+                window.__SCENE_PROGRESS_HOVER_RATIO__ = r;
+                wrapEl.style.setProperty('--hover-ratio', r);
+                const hoverIdx = Math.max(0, Math.min(navList.length - 1, Math.round(r * maxIdx)));
+                if (navList[hoverIdx]) {
+                  wrapEl.title = `${navList[hoverIdx].pageNum}/70 페이지로 이동`;
+                }
+              };
+              wrapEl.addEventListener('pointerenter', updateHover);
+              wrapEl.addEventListener('pointermove', updateHover);
+              ['click', 'dblclick'].forEach((ev) => {
+                wrapEl.addEventListener(ev, (e) => e.stopPropagation());
+              });
+
+              const seekSceneByClientX = (clientX) => {
+                const activeBar = stage.querySelector('.scene-progress-bar') || barEl;
+                const rect = activeBar.getBoundingClientRect();
+                if (rect.width <= 0 || navList.length === 0) return;
+                const r = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+                window.__SCENE_PROGRESS_HOVER_RATIO__ = r;
+                const targetIdx = Math.max(0, Math.min(navList.length - 1, Math.round(r * maxIdx)));
+                const target = navList[targetIdx];
+                if (target && current && current.n !== target.key) {
+                  goTo(target.key, 'none');
+                }
+              };
+
+              wrapEl.addEventListener('mousedown', (e) => {
+                if (e.button !== 0) return;
+                e.preventDefault();
+                e.stopPropagation();
+                window.__SCENE_PROGRESS_DRAGGING__ = true;
+                stage.querySelectorAll('.scene-progress-wrap').forEach((w) => w.classList.add('dragging'));
+                seekSceneByClientX(e.clientX);
+                const onMove = (ev) => {
+                  if (!window.__SCENE_PROGRESS_DRAGGING__) return;
+                  ev.preventDefault();
+                  seekSceneByClientX(ev.clientX);
+                };
+                const onUp = () => {
+                  window.__SCENE_PROGRESS_DRAGGING__ = false;
+                  stage.querySelectorAll('.scene-progress-wrap').forEach((w) => w.classList.remove('dragging'));
+                  window.removeEventListener('mousemove', onMove);
+                  window.removeEventListener('mouseup', onUp);
+                  window.removeEventListener('blur', onUp);
+                };
+                window.addEventListener('mousemove', onMove);
+                window.addEventListener('mouseup', onUp);
+                window.addEventListener('blur', onUp);
+              });
+
+              wrapEl.addEventListener('touchstart', (e) => {
+                if (e.touches.length !== 1) return;
+                e.stopPropagation();
+                window.__SCENE_PROGRESS_DRAGGING__ = true;
+                stage.querySelectorAll('.scene-progress-wrap').forEach((w) => w.classList.add('dragging'));
+                seekSceneByClientX(e.touches[0].clientX);
+                const onTouchMove = (ev) => {
+                  if (!window.__SCENE_PROGRESS_DRAGGING__ || ev.touches.length !== 1) return;
+                  ev.preventDefault();
+                  seekSceneByClientX(ev.touches[0].clientX);
+                };
+                const onTouchEnd = () => {
+                  window.__SCENE_PROGRESS_DRAGGING__ = false;
+                  stage.querySelectorAll('.scene-progress-wrap').forEach((w) => w.classList.remove('dragging'));
+                  window.removeEventListener('touchmove', onTouchMove);
+                  window.removeEventListener('touchend', onTouchEnd);
+                  window.removeEventListener('touchcancel', onTouchEnd);
+                };
+                window.addEventListener('touchmove', onTouchMove, { passive: false });
+                window.addEventListener('touchend', onTouchEnd);
+                window.addEventListener('touchcancel', onTouchEnd);
+              }, { passive: true });
+
+              container.appendChild(wrapEl);
+            }
+          };
+
+          const dialogWraps = el.querySelectorAll('.dialog-wrap');
+          if (dialogWraps.length > 0) {
+            dialogWraps.forEach((dw) => attachCounterAndProgress(dw));
+          } else {
+            attachCounterAndProgress(el);
           }
         }
 

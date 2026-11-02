@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+  <base href="비주얼노벨 에셋/JIHWA_01-05/">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>知花冊房</title>
@@ -1704,13 +1705,13 @@
     }
 
     /* ==============================================================
-       [S2 47장면] 책 뷰어 (나무 질감 배경 + 앞/뒷표지 중앙선 분할 배치 + 드롭쉐도우 + 책척도 바)
+       [S2 독서 모드] 책 뷰어 (나무 질감 배경 + 앞/뒷표지 중앙선 분할 배치 + 드롭쉐도우 + 책척도 바)
        ============================================================== */
-    .scene-47 .scene-counter {
+    .scene-reader .scene-counter {
       display: none !important;
     }
 
-    .scene-47 .reader-stage {
+    .scene-reader .reader-stage {
       position: absolute;
       inset: 0;
       width: 100%;
@@ -1718,7 +1719,7 @@
       overflow: hidden;
     }
 
-    .scene-47 .book-viewport {
+    .scene-reader .book-viewport {
       position: absolute;
       top: 0;
       bottom: 0;
@@ -1735,7 +1736,7 @@
        책 크기: 폭 535px, 높이 760px (원본 2117x3007 비율 유지)
        세로 중앙 정렬: top: 48% (하단 책척도 바 감안)
     */
-    .scene-47 .book-page {
+    .scene-reader .book-page {
       position: absolute;
       top: 48%;
       transform: translateY(-50%);
@@ -1746,17 +1747,17 @@
       align-items: center;
     }
 
-    .scene-47 .book-page.book-page-left {
+    .scene-reader .book-page.book-page-left {
       right: 683px;
       justify-content: flex-end;
     }
 
-    .scene-47 .book-page.book-page-right {
+    .scene-reader .book-page.book-page-right {
       left: 683px;
       justify-content: flex-start;
     }
 
-    .scene-47 .book-page-img {
+    .scene-reader .book-page-img {
       height: 760px;
       width: auto;
       max-width: 560px;
@@ -1766,7 +1767,7 @@
     }
 
     /* 양쪽 펼침면 중앙 책등(책 골) 입체 그림자 */
-    .scene-47 .book-spine-crease {
+    .scene-reader .book-spine-crease {
       position: absolute;
       top: 48%;
       transform: translateY(-50%);
@@ -1787,7 +1788,7 @@
     }
 
     /* 좌/우 클릭 인터랙션 구역 (중앙선 분할) */
-    .scene-47 .reader-zone {
+    .scene-reader .reader-zone {
       position: absolute;
       top: 0;
       bottom: 90px; /* 책척도 바 영역 침범 방지 */
@@ -1796,23 +1797,23 @@
       user-select: none;
     }
 
-    .scene-47 .reader-zone.zone-left {
+    .scene-reader .reader-zone.zone-left {
       left: 0;
       cursor: pointer;
     }
 
-    .scene-47 .reader-zone.zone-right {
+    .scene-reader .reader-zone.zone-right {
       right: 0;
       cursor: pointer;
     }
 
-    .scene-47 .reader-zone.zone-right.disabled {
+    .scene-reader .reader-zone.zone-right.disabled {
       cursor: default;
       pointer-events: none;
     }
 
     /* 화면 하단 중앙 '책척도 바' & '책척도' */
-    .scene-47 .reader-progress-wrap {
+    .scene-reader .reader-progress-wrap {
       position: absolute;
       bottom: 37px;
       left: 50%;
@@ -1828,20 +1829,75 @@
       touch-action: none;
     }
 
-    .scene-47 .reader-progress-wrap:hover .reader-progress-bar {
-      filter: brightness(1.08);
+    /* 진척바 호버 반응: 살짝 두꺼워지고 밝아짐 → 클릭/드래그 가능함을 안내 (빛 산란 없음) */
+    .scene-reader .reader-progress-wrap:hover .reader-progress-bar,
+    .scene-reader .reader-progress-wrap.dragging .reader-progress-bar {
+      transform: scaleY(1.3);
+      filter: brightness(1.25);
     }
 
-    .scene-47 .reader-progress-bar {
+    .scene-reader .reader-progress-wrap.dragging {
+      cursor: grabbing;
+    }
+
+    /* 마우스 위치까지 미리보기 하이라이트 (이동할 지점 안내) */
+    .scene-reader .reader-progress-hover {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: calc(var(--hover-ratio, 0) * 100%);
+      background: rgba(230, 200, 255, 0.22);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.18s ease;
+    }
+
+    .scene-reader .reader-progress-wrap:hover .reader-progress-hover {
+      opacity: 1;
+    }
+
+    .scene-reader .reader-progress-wrap.dragging .reader-progress-hover {
+      opacity: 0;
+    }
+
+    /* 현재 위치 끝점 마커 (호버 시 반짝이며 등장) */
+    .scene-reader .reader-progress-fill::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      bottom: 2px;
+      right: 0;
+      width: 3px;
+      border-radius: 2px;
+      background: rgba(255, 240, 255, 0.9);
+      opacity: 0;
+      transition: opacity 0.18s ease;
+    }
+
+    .scene-reader .reader-progress-wrap:hover .reader-progress-fill::after,
+    .scene-reader .reader-progress-wrap.dragging .reader-progress-fill::after {
+      opacity: 1;
+      animation: progressMarkerPulse 1.2s ease-in-out infinite;
+    }
+
+    @keyframes progressMarkerPulse {
+      0%, 100% { opacity: 1; }
+      50%      { opacity: 0.45; }
+    }
+
+    .scene-reader .reader-progress-bar {
       position: relative;
       width: 100%;
       height: 18px;
       background: url('02_motions/progress_bar.png') no-repeat center / 100% 100%;
       overflow: hidden;
-      transition: filter 0.15s ease;
+      border-radius: 9px;
+      transform-origin: 50% 50%;
+      transition: filter 0.18s ease, transform 0.22s cubic-bezier(0.2, 0.8, 0.25, 1);
     }
 
-    .scene-47 .reader-progress-fill {
+    .scene-reader .reader-progress-fill {
       position: absolute;
       left: 0;
       top: 0;
@@ -1851,8 +1907,762 @@
       transition: width 0.3s cubic-bezier(0.2, 0.8, 0.25, 1);
     }
 
-    .scene-47 .reader-progress-wrap.dragging .reader-progress-fill {
+    .scene-reader .reader-progress-wrap.dragging .reader-progress-fill {
       transition: none; /* 드래그 중에는 즉각 반응 */
+    }
+
+    /* 독서 화면 나가기 확인 모달 (#0000 70% 오버레이 + 중앙정렬 안내창) */
+    .scene-reader .reader-exit-modal {
+      position: absolute;
+      inset: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.7);
+      animation: modalFadeIn 0.2s ease-out;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .scene-reader .exit-modal-dialog {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 36px;
+      user-select: none;
+    }
+
+    .scene-reader .exit-prompt-img {
+      width: 620px;
+      height: auto;
+      display: block;
+      pointer-events: none;
+      filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+    }
+
+    .scene-reader .exit-buttons-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 40px;
+    }
+
+    .scene-reader .exit-btn {
+      background: transparent;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      display: block;
+      transition: transform 0.16s cubic-bezier(0.2, 0.8, 0.25, 1), filter 0.16s ease;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+    }
+
+    .scene-reader .exit-btn:hover {
+      transform: scale(1.06);
+      filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.6)) brightness(1.08);
+    }
+
+    .scene-reader .exit-btn:active {
+      transform: scale(0.96);
+    }
+
+    .scene-reader .exit-btn img {
+      width: 260px;
+      height: auto;
+      display: block;
+      pointer-events: none;
+    }
+
+    /* ==============================================================
+       [S2 47장면] 서점 비둘기의 독서 시간 (스탠드 조명, 안경 시선 이동, 책장 살랑임, 머그잔 김)
+       ============================================================== */
+            .scene-47 {
+      position: absolute;
+      inset: 0;
+      width: 1366px;
+      height: 1024px;
+      overflow: hidden;
+    }
+
+    .scene-47 .bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      display: block;
+      pointer-events: none;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: high-quality;
+    }
+
+    /* 1. 눈 그래픽 (398x73 원본 고화질 -> 정면 응시와 아래 책 응시 모션) */
+    .scene-47 .character-eyes {
+      position: absolute;
+      left: 681px;
+      top: 270px;
+      width: 100px;
+      height: 18.5px;
+      pointer-events: none;
+      z-index: 10;
+      transition: transform 0.75s cubic-bezier(0.25, 1, 0.5, 1);
+      transform: translate3d(0, 0, 0); /* 정면 응시 */
+    }
+
+    .scene-47 .character-eyes.looking-down {
+      transform: translate3d(0, 8.5px, 0); /* 파란 책(하단 좌측) 응시 */
+    }
+
+    .scene-47 .character-eyes img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: high-quality;
+    }
+
+    /* 2. Paper 그래픽 (파란 북커버 중앙 꼭지와 하얀 내지 중앙 꼭지 일치 + 고정점 pivot 기준 살랑거림) */
+    .scene-47 .book-paper {
+      position: absolute;
+      left: 474.5px;
+      top: 303.5px;
+      width: 147px;
+      height: 76.5px;
+      pointer-events: none;
+      z-index: 10;
+      transform-origin: 78.9px 58.9px; /* 파란 북커버 & 하얀 내지 정중앙 꼭지(spine vertex) */
+      animation: paperSway 2.6s ease-in-out infinite alternate;
+    }
+
+    .scene-47 .book-paper img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: high-quality;
+    }
+
+    @keyframes paperSway {
+      0%   { transform: rotate(-4.5deg); }
+      100% { transform: rotate(4.5deg); }
+    }
+
+    /* 3. Steam 그래픽 (머그잔 위 3개 연기 줄 분할 + 느린 프레임(steps) + 불규칙한 높이) */
+    .scene-47 .mug-steam-wrap {
+      position: absolute;
+      left: 970px;
+      top: 320px;
+      width: 50px;
+      height: 40px;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .scene-47 .steam-line {
+      position: absolute;
+      bottom: 0;
+      width: 14px;
+      height: 40px;
+      overflow: visible;
+      transform-origin: 50% 100%;
+    }
+
+    .scene-47 .steam-line.line-1 {
+      left: 0px;
+      animation: steamRise1 5.4s steps(14) infinite;
+    }
+
+    .scene-47 .steam-line.line-2 {
+      left: 18px;
+      animation: steamRise2 6.0s steps(16) infinite;
+      animation-delay: 1.5s;
+    }
+
+    .scene-47 .steam-line.line-3 {
+      left: 36px;
+      animation: steamRise3 5.6s steps(15) infinite;
+      animation-delay: 3.0s;
+    }
+
+    /* 1번 연기 줄: 좌측 (잔잔한 높이 약 -19px) */
+    @keyframes steamRise1 {
+      0% {
+        transform: translate3d(0, 2px, 0) scale(0.9);
+        opacity: 0;
+      }
+      20% {
+        opacity: 0.7;
+      }
+      50% {
+        transform: translate3d(-1px, -9px, 0) scale(0.98);
+        opacity: 0.6;
+      }
+      80% {
+        opacity: 0.25;
+      }
+      100% {
+        transform: translate3d(-2px, -19px, 0) scale(1.05);
+        opacity: 0;
+      }
+    }
+
+    /* 2번 연기 줄 (가운데): 잔잔한 높이 (약 -23px) */
+    @keyframes steamRise2 {
+      0% {
+        transform: translate3d(0, 2px, 0) scale(0.92);
+        opacity: 0;
+      }
+      18% {
+        opacity: 0.75;
+      }
+      45% {
+        transform: translate3d(1px, -11px, 0) scale(1.02);
+        opacity: 0.65;
+      }
+      75% {
+        opacity: 0.3;
+      }
+      100% {
+        transform: translate3d(1px, -23px, 0) scale(1.08);
+        opacity: 0;
+      }
+    }
+
+    /* 3번 연기 줄 (우측): 잔잔한 높이 (약 -20px) */
+    @keyframes steamRise3 {
+      0% {
+        transform: translate3d(0, 2px, 0) scale(0.88);
+        opacity: 0;
+      }
+      22% {
+        opacity: 0.7;
+      }
+      50% {
+        transform: translate3d(1px, -10px, 0) scale(0.98);
+        opacity: 0.55;
+      }
+      80% {
+        opacity: 0.25;
+      }
+      100% {
+        transform: translate3d(1.5px, -20px, 0) scale(1.05);
+        opacity: 0;
+      }
+    }
+  
+    /* ==============================================================
+       [S2 48장면] 일어선 비둘기 씬 (배경, 왼손 책 paper 모션, 오른손 머그잔 steam 3줄 모션)
+       ============================================================== */
+    .scene-48 {
+      position: absolute;
+      inset: 0;
+      width: 1366px;
+      height: 1024px;
+      overflow: hidden;
+    }
+
+    .scene-48 .bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      display: block;
+      pointer-events: none;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: high-quality;
+    }
+
+    /* Paper 그래픽 (48번 장면: 일어선 비둘기 왼손 책 커버 위치 정밀 일치) */
+    .scene-48 .book-paper {
+      position: absolute;
+      left: 469.6px;
+      top: 348.5px;
+      width: 147px;
+      height: 76.5px;
+      pointer-events: none;
+      z-index: 10;
+      transform-origin: 78.9px 58.9px; /* 하얀 내지 V-Crease 꼭지점 고정 */
+      animation: paperSway 2.6s ease-in-out infinite alternate;
+    }
+
+    .scene-48 .book-paper img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: high-quality;
+    }
+
+    /* Steam 그래픽 (48번 장면: 일어선 비둘기 오른손 머그잔 위 위치 정밀 일치) */
+    .scene-48 .mug-steam-wrap {
+      position: absolute;
+      left: 968px;
+      top: 549px;
+      width: 50px;
+      height: 40px;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .scene-48 .steam-line {
+      position: absolute;
+      bottom: 0;
+      width: 14px;
+      height: 40px;
+      overflow: visible;
+      transform-origin: 50% 100%;
+    }
+
+    .scene-48 .steam-line.line-1 {
+      left: 0px;
+      animation: steamRise1 5.4s steps(14) infinite;
+    }
+
+    .scene-48 .steam-line.line-2 {
+      left: 18px;
+      animation: steamRise2 6.0s steps(16) infinite;
+      animation-delay: 1.5s;
+    }
+
+    .scene-48 .steam-line.line-3 {
+      left: 36px;
+      animation: steamRise3 5.6s steps(15) infinite;
+      animation-delay: 3.0s;
+    }
+
+  
+    /* ==============================================================
+       [S2 47장면] 찻잔 김 (반투명 회색 김 줄기가 부드럽게 피어오름)
+       ============================================================== */
+    .scene-47 .mug-steam-wrap,
+    .scene-48 .mug-steam-wrap {
+      overflow: visible;
+    }
+
+    .scene-47 .steam-haze,
+    .scene-48 .steam-haze {
+      position: absolute;
+      left: 2px;
+      bottom: -4px;
+      width: 46px;
+      height: 16px;
+      border-radius: 50%;
+      background: radial-gradient(ellipse at center, rgba(210, 210, 215, 0.35) 0%, rgba(210, 210, 215, 0) 70%);
+      filter: blur(2px);
+      animation: steamHaze 4.8s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .scene-47 .steam-wisp,
+    .scene-48 .steam-wisp {
+      position: absolute;
+      bottom: 0;
+      width: 16px;
+      height: 44px;
+      overflow: visible;
+      fill: rgb(205, 205, 212);
+      filter: blur(1.1px);
+      transform-origin: 50% 100%;
+      opacity: 0;
+      pointer-events: none;
+      will-change: transform, opacity;
+    }
+
+    .scene-47 .steam-wisp.wisp-1, .scene-48 .steam-wisp.wisp-1 { left: 6px;  animation: wispRiseA 4.6s ease-out infinite; }
+    .scene-47 .steam-wisp.wisp-2, .scene-48 .steam-wisp.wisp-2 { left: 18px; animation: wispRiseB 5.4s ease-out infinite 1.2s; }
+    .scene-47 .steam-wisp.wisp-3, .scene-48 .steam-wisp.wisp-3 { left: 28px; animation: wispRiseA 5.0s ease-out infinite 2.5s; }
+    .scene-47 .steam-wisp.wisp-4, .scene-48 .steam-wisp.wisp-4 { left: 14px; animation: wispRiseB 6.0s ease-out infinite 3.6s; }
+
+    @keyframes wispRiseA {
+      0%   { transform: translate3d(0, 6px, 0) scale(0.55, 0.45) skewX(0deg);  opacity: 0; }
+      20%  { opacity: 0.5; }
+      50%  { transform: translate3d(-2px, -10px, 0) scale(0.9, 0.85) skewX(5deg); opacity: 0.42; }
+      80%  { opacity: 0.18; }
+      100% { transform: translate3d(3px, -28px, 0) scale(1.2, 1.1) skewX(-7deg); opacity: 0; }
+    }
+
+    @keyframes wispRiseB {
+      0%   { transform: translate3d(0, 6px, 0) scale(-0.55, 0.45) skewX(0deg);  opacity: 0; }
+      22%  { opacity: 0.45; }
+      50%  { transform: translate3d(2px, -9px, 0) scale(-0.9, 0.85) skewX(-5deg); opacity: 0.38; }
+      80%  { opacity: 0.15; }
+      100% { transform: translate3d(-3px, -26px, 0) scale(-1.2, 1.1) skewX(6deg); opacity: 0; }
+    }
+
+    @keyframes steamHaze {
+      0%, 100% { opacity: 0.5; transform: scale(0.95, 0.9); }
+      50%      { opacity: 0.9; transform: scale(1.05, 1.1); }
+    }
+  
+    /* ========== 우측 하단 페이지 번호 더블클릭 → 대사창 아래쪽 직사각형 칸(34px) 내 얇은 척도 바 ========== */
+    .scene-counter {
+      pointer-events: auto;
+      cursor: pointer;
+      padding: 6px 8px;
+      margin: -6px -8px;
+      z-index: 120;
+    }
+
+    .scene-progress-wrap {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 860px;
+      height: 34px; /* 대사창 아래쪽 직사각형 칸(182px~216px, 높이 34px) 정중앙 배치 */
+      z-index: 118;
+      pointer-events: auto;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      user-select: none;
+      touch-action: none;
+    }
+
+    .dialog-wrap .scene-progress-wrap {
+      left: calc(50% - 3px); /* .dialog-wrap 우측 6px 확장에 맞춘 스테이지 정중앙 정렬 */
+    }
+
+    .scene-progress-wrap.open {
+      display: flex;
+    }
+
+    .scene-progress-wrap.dragging {
+      cursor: grabbing;
+    }
+
+    .scene-progress-bar {
+      position: relative;
+      width: 100%;
+      height: 8px; /* 대사창 하단 직사각형 칸 안에 들어가는 얇은 척도 바 */
+      background: rgba(75, 15, 95, 0.38) url('02_motions/progress_bar.png') no-repeat center / 100% 100%;
+      overflow: hidden;
+      border-radius: 4px;
+      transform-origin: 50% 50%;
+      transition: filter 0.18s ease, transform 0.22s cubic-bezier(0.2, 0.8, 0.25, 1);
+    }
+
+    .scene-progress-wrap:hover .scene-progress-bar,
+    .scene-progress-wrap.dragging .scene-progress-bar {
+      transform: scaleY(1.35);
+      filter: brightness(1.25);
+    }
+
+    .scene-progress-hover {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: calc(var(--hover-ratio, 0) * 100%);
+      background: rgba(230, 200, 255, 0.22);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.18s ease;
+    }
+
+    .scene-progress-wrap:hover .scene-progress-hover {
+      opacity: 1;
+    }
+
+    .scene-progress-wrap.dragging .scene-progress-hover {
+      opacity: 0;
+    }
+
+    .scene-progress-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 10px;
+      background: rgba(75, 15, 95, 0.55) url('02_motions/progress_gauge.png') repeat-x left center / auto 100%;
+      transition: width 0.25s cubic-bezier(0.2, 0.8, 0.25, 1);
+    }
+
+    .scene-progress-wrap.dragging .scene-progress-fill {
+      transition: none;
+    }
+
+    .scene-progress-fill::after {
+      content: '';
+      position: absolute;
+      top: 1px;
+      bottom: 1px;
+      right: 0;
+      width: 3px;
+      border-radius: 2px;
+      background: rgba(255, 240, 255, 0.9);
+      opacity: 0;
+      transition: opacity 0.18s ease;
+    }
+
+    .scene-progress-wrap:hover .scene-progress-fill::after,
+    .scene-progress-wrap.dragging .scene-progress-fill::after {
+      opacity: 1;
+      animation: progressMarkerPulse 1.2s ease-in-out infinite;
+    }
+  
+    /* ==============================================================
+       [S2 49장면] 배웅하는 비둘기 클로즈업 씬
+       ============================================================== */
+    .scene-49 {
+      position: absolute;
+      inset: 0;
+      width: 1366px;
+      height: 1024px;
+      overflow: hidden;
+    }
+
+    .scene-49 .bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      display: block;
+      pointer-events: none;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: high-quality;
+    }
+  
+    /* ==============================================================
+       [S2 50장면] 비둘기 시선 이동 씬 (아래 -> 비둘기 기준 정면 -> 카메라 정중앙)
+       ============================================================== */
+    .scene-50 {
+      position: absolute;
+      inset: 0;
+      width: 1366px;
+      height: 1024px;
+      overflow: hidden;
+    }
+
+    .scene-50 .bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      display: block;
+      pointer-events: none;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: high-quality;
+    }
+
+    .scene-50 .pigeon-pupil {
+      position: absolute;
+      left: 658.58px;
+      top: 383.52px;
+      width: 40px;
+      height: 39.5px;
+      pointer-events: none;
+      z-index: 10;
+      transform: translate3d(0, 0, 0); /* 1단계: 49번 장면처럼 아래(비둘기 기준) 응시 */
+      transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+      will-change: transform;
+    }
+
+    .scene-50 .pigeon-pupil.look-front {
+      transform: translate3d(-7.93px, -11.52px, 0); /* 2단계: 비둘기 기준 정면(좌측 수평) 응시 */
+    }
+
+    .scene-50 .pigeon-pupil.look-camera {
+      transform: translate3d(18.92px, -13.52px, 0); /* 3단계: 카메라 쪽(흰자의 정중앙) 응시 */
+    }
+
+    .scene-50 .pigeon-pupil img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: high-quality;
+    }
+
+    /* ==============================================================
+       [S2 51장면] 액자가 드러나며 시치미 떼는 비둘기 씬
+       ============================================================== */
+    .scene-51 {
+      position: absolute;
+      inset: 0;
+      width: 1366px;
+      height: 1024px;
+      overflow: hidden;
+    }
+
+    .scene-51 .bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      display: block;
+      pointer-events: none;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: high-quality;
+    }
+
+    /* ==============================================================
+       [S2 52장면] 액자 클로즈업 씬 ("You: (저 사진은 뭐지?)")
+       ============================================================== */
+    .scene-52 {
+      position: absolute;
+      inset: 0;
+      width: 1366px;
+      height: 1024px;
+      overflow: hidden;
+    }
+
+    .scene-52 .bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      display: block;
+      pointer-events: none;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: high-quality;
+    }
+
+    /* ==============================================================
+       [S2 53장면] 액자 정면 클로즈업 씬 ("You: (아, 그 친구인가? 오래전에 책을 선물했다던...)")
+       ============================================================== */
+    .scene-53 {
+      position: absolute;
+      inset: 0;
+      width: 1366px;
+      height: 1024px;
+      overflow: hidden;
+    }
+
+    .scene-53 .bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      display: block;
+      pointer-events: none;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: high-quality;
+    }
+
+    /* ==============================================================
+       [S2 54장면] 액자 앞을 슥 가로막으며 나타나는 비둘기 씬 (대사 없음 + 효과음)
+       ============================================================== */
+    .scene-54 {
+      position: absolute;
+      inset: 0;
+      width: 1366px;
+      height: 1024px;
+      overflow: hidden;
+    }
+
+    .scene-54 .bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      display: block;
+      pointer-events: none;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: high-quality;
+    }
+
+    /* ==============================================================
+       [S2 55장면] 정면 클로즈업 비둘기 아랫입술(lip.png) 상하 발화 모션 씬
+       ============================================================== */
+    .scene-55 {
+      position: absolute;
+      inset: 0;
+      width: 1366px;
+      height: 1024px;
+      overflow: hidden;
+    }
+
+    .scene-55 .bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      display: block;
+      pointer-events: none;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: high-quality;
+    }
+
+    /* 53 lip(x577.44y642.85 to y655.45).png 정밀 좌표 매핑 */
+    .scene-55 .pigeon-lip {
+      position: absolute;
+      left: 577.44px;
+      top: 642.85px;
+      width: 221.75px;
+      height: 51.25px;
+      pointer-events: none;
+      z-index: 10;
+      transform: translate3d(0, 0, 0);
+      transition: transform 0.085s ease-in-out;
+      will-change: transform;
+    }
+
+    .scene-55 .pigeon-lip img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: high-quality;
+    }
+
+    /* ==============================================================
+       [S2 56장면] 앞서 걸어가는 비둘기 씬 ("P: 조심해서 잘 따라오셔야죠.")
+       ============================================================== */
+    .scene-56 {
+      position: absolute;
+      inset: 0;
+      width: 1366px;
+      height: 1024px;
+      overflow: hidden;
+    }
+
+    .scene-56 .bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      display: block;
+      pointer-events: none;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: high-quality;
+    }
+
+    /* ==============================================================
+       [S2 57장면] 걸어 내려가는 비둘기 씬 ("P: 이곳의 어둠은 투구꽃의 독처럼 무섭고 위험하답니다.")
+       ============================================================== */
+    .scene-57 {
+      position: absolute;
+      inset: 0;
+      width: 1366px;
+      height: 1024px;
+      overflow: hidden;
+    }
+
+    .scene-57 .bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      display: block;
+      pointer-events: none;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: high-quality;
     }
   </style>
 </head>
@@ -1918,6 +2728,7 @@
         };
       },
     };
+
 
     // 21번 장면으로도 상호 호환 매핑
     window.SCENES[21] = window.SCENES[1];
@@ -2042,6 +2853,7 @@
         };
       },
     };
+
     window.SCENES[23] = window.SCENES[3];
 
     /* ==============================================================
@@ -2095,6 +2907,7 @@
         };
       },
     };
+
     window.SCENES[24] = window.SCENES[4];
 
     /* ==============================================================
@@ -2146,6 +2959,7 @@
         };
       },
     };
+
     window.SCENES[25] = window.SCENES[5];
 
     /* ==============================================================
@@ -3490,46 +4304,85 @@
         armRaf = requestAnimationFrame(renderArm);
         window.addEventListener('mousemove', onMouseMove);
 
-        let lastClickTime = 0;
-        const onClick = (e) => {
-          if (e.button !== 0) return;
-          if (typing && !typing.isFinished()) {
-            typing.finish();
-            lastClickTime = Date.now();
-            return;
+        let lastBookClickTime = 0;
+        let lastStageClickTime = 0;
+        let isTransitioning = false;
+        let bookClickTimer = null;
+
+        const goTo47 = () => {
+          if (isTransitioning) return;
+          isTransitioning = true;
+          if (bookClickTimer) {
+            clearTimeout(bookClickTimer);
+            bookClickTimer = null;
           }
-          const now = Date.now();
-          if (now - lastClickTime < 600) {
-            lastClickTime = 0;
-            app.next('fade');
-          } else {
-            lastClickTime = now;
-          }
+          app.goTo(47, 'fade');
         };
 
+        // 더블클릭 이벤트: 어디를 더블클릭하든 47장면 이동
         const onDblClick = (e) => {
           if (e.button !== 0) return;
+          e.preventDefault();
+          e.stopPropagation();
+          goTo47();
+        };
+
+        // 화면 빈 곳 클릭 시 (타이핑 스킵, 빈 화면 더블클릭 시 47장면 이동)
+        const onStageClick = (e) => {
+          if (e.button !== 0) return;
           if (typing && !typing.isFinished()) {
             typing.finish();
           }
-          app.next('fade');
-        };
-
-        el.addEventListener('click', onClick);
-        el.addEventListener('dblclick', onDblClick);
-
-        // 책 클릭 시 책 읽기 뷰어(47장면)로 전환
-        const onBookClick = (e) => {
-          e.stopPropagation();
-          const item = e.currentTarget;
-          const bookIdx = parseInt(item.dataset.index, 10);
-          if (app.openReader) {
-            app.openReader(bookIdx);
+          const now = Date.now();
+          if (e.detail >= 2 || (lastStageClickTime > 0 && now - lastStageClickTime < 400)) {
+            lastStageClickTime = 0;
+            goTo47();
           } else {
-            window.CURRENT_BOOK_ID = bookIdx;
-            app.goTo(47, 'fade');
+            lastStageClickTime = now;
           }
         };
+
+        // 책 클릭 시: 1회 클릭은 책 읽기 화면 오픈, 2회 클릭(더블클릭)은 책 취소하고 47장면으로 이동
+        const onBookClick = (e) => {
+          if (e.button !== 0) return;
+          e.stopPropagation();
+          const now = Date.now();
+
+          // 2번째 클릭(더블클릭) 판정
+          if (e.detail >= 2 || (lastBookClickTime > 0 && now - lastBookClickTime < 400)) {
+            lastBookClickTime = 0;
+            if (bookClickTimer) {
+              clearTimeout(bookClickTimer);
+              bookClickTimer = null;
+            }
+            goTo47();
+            return;
+          }
+
+          // 1번째 클릭: 320ms 후 책 읽기 뷰어 열기
+          lastBookClickTime = now;
+          const item = e.currentTarget;
+          const bookIdx = parseInt(item.dataset.index, 10);
+          if (bookClickTimer) {
+            clearTimeout(bookClickTimer);
+          }
+          bookClickTimer = setTimeout(() => {
+            bookClickTimer = null;
+            lastBookClickTime = 0;
+            if (!isTransitioning) {
+              if (app.openReader) {
+                app.openReader(bookIdx);
+              } else {
+                window.CURRENT_BOOK_ID = bookIdx;
+                app.goTo('reader', 'fade');
+              }
+            }
+          }, 320);
+        };
+
+        el.addEventListener('click', onStageClick);
+        el.addEventListener('dblclick', onDblClick);
+        window.addEventListener('dblclick', onDblClick);
 
         const bookItems = el.querySelectorAll('.book-item');
         bookItems.forEach((item) => {
@@ -3538,12 +4391,14 @@
 
         return {
           unmount() {
+            if (bookClickTimer) clearTimeout(bookClickTimer);
             cancelAnimationFrame(armRaf);
             window.removeEventListener('mousemove', onMouseMove);
             window.removeEventListener('resize', updateRect);
             if (typing) typing.stop();
-            el.removeEventListener('click', onClick);
+            el.removeEventListener('click', onStageClick);
             el.removeEventListener('dblclick', onDblClick);
+            window.removeEventListener('dblclick', onDblClick);
             bookItems.forEach((item) => {
               item.removeEventListener('click', onBookClick);
             });
@@ -3553,9 +4408,9 @@
     };
 
     /* ==============================================================
-       [S2 47장면] 책 뷰어 (나무 질감 배경 + 앞/뒷표지 및 PDF 양쪽 펼침면 뷰어 + 드롭쉐도우 + 책척도 바)
+       [S2 독서 모드] 책 뷰어 (나무 질감 배경 + 앞/뒷표지 및 PDF 양쪽 펼침면 뷰어 + 드롭쉐도우 + 책척도 바)
        ============================================================== */
-    window.SCENES[47] = {
+    window.SCENES['reader'] = {
       isReader: true,
       mount(el, app) {
         const bookIdx = window.CURRENT_BOOK_ID || 1;
@@ -3612,7 +4467,21 @@
             <div class="reader-zone zone-right" title="다음 장"></div>
             <div class="reader-progress-wrap" title="척도바를 클릭하거나 드래그하여 페이지 이동">
               <div class="reader-progress-bar">
-                <div class="reader-progress-fill"></div>
+                <div class="reader-progress-hover"></div><div class="reader-progress-fill"></div>
+              </div>
+            </div>
+            </div>
+            <div class="reader-exit-modal" style="display: none;">
+              <div class="exit-modal-dialog">
+                <img class="exit-prompt-img" src="02_motions/book_exit_prompt.png" alt="이 책을 그만 읽으시겠습니까?">
+                <div class="exit-buttons-wrap">
+                  <button type="button" class="exit-btn btn-quit" title="그만 읽을게요.">
+                    <img src="02_motions/book_exit_btn_quit.png" alt="그만 읽을게요.">
+                  </button>
+                  <button type="button" class="exit-btn btn-mistake" title="실수입니다...!">
+                    <img src="02_motions/book_exit_btn_mistake.png" alt="실수입니다...!">
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -3628,6 +4497,52 @@
         const progressWrap = el.querySelector('.reader-progress-wrap');
         const progressBar = el.querySelector('.reader-progress-bar');
         const progressFill = el.querySelector('.reader-progress-fill');
+
+        // 진척바 호버 프리뷰: 마우스 위치까지 은은한 하이라이트 표시
+        const updateHoverPreview = (e) => {
+          const rect = progressBar.getBoundingClientRect();
+          const ratio = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+          progressWrap.style.setProperty('--hover-ratio', ratio);
+        };
+        progressWrap.addEventListener('pointerenter', updateHoverPreview);
+        progressWrap.addEventListener('pointermove', updateHoverPreview);
+
+        const modal = el.querySelector('.reader-exit-modal');
+        const btnQuit = el.querySelector('.btn-quit');
+        const btnMistake = el.querySelector('.btn-mistake');
+        let isModalOpen = false;
+
+        const showExitModal = () => {
+          isModalOpen = true;
+          modal.style.display = 'flex';
+        };
+
+        const hideExitModal = () => {
+          isModalOpen = false;
+          modal.style.display = 'none';
+        };
+
+        btnQuit.addEventListener('click', (e) => {
+          e.stopPropagation();
+          hideExitModal();
+          app.goTo(46, 'fade');
+        });
+
+        btnMistake.addEventListener('click', (e) => {
+          e.stopPropagation();
+          hideExitModal();
+        });
+
+        // 우클릭 시에도 안내창과 연동
+        window.__READER_SHOW_EXIT_MODAL__ = () => {
+          if (isModalOpen) {
+            hideExitModal();
+          } else if (currentPage > 0) {
+            showExitModal();
+          } else {
+            app.goTo(46, 'fade');
+          }
+        };
 
         let currentPage = 0; // 0 = 앞표지
 
@@ -3726,17 +4641,19 @@
 
         const onLeftClick = (e) => {
           if (e && e.button !== 0) return;
+          if (isModalOpen) return;
           if (currentPage === 0) {
             // 표지가 나타난 화면에서는 좌측 클릭하면 다시 46페이지로 복귀
             app.goTo(46, 'fade');
           } else {
-            currentPage--;
-            updateView();
+            // 표지를 넘긴 이후부터는 좌클릭 시 나가기 확인 선택창 표시
+            showExitModal();
           }
         };
 
         const onRightClick = (e) => {
           if (e && e.button !== 0) return;
+          if (isModalOpen) return;
           if (currentPage >= totalSteps) {
             // 뒷표지가 나오는 장면에서는 화면 오른쪽 클릭 반응 비활성화
             return;
@@ -3746,10 +4663,19 @@
         };
 
         const onKeyDown = (e) => {
+          if (isModalOpen) {
+            if (e.key === 'Escape') {
+              hideExitModal();
+            }
+            return;
+          }
           if (e.key === 'ArrowRight' || e.key === 'PageDown') {
             onRightClick();
           } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
-            onLeftClick();
+            if (currentPage > 0) {
+              currentPage--;
+              updateView();
+            }
           }
         };
 
@@ -3834,6 +4760,7 @@
 
         return {
           unmount() {
+            window.__READER_SHOW_EXIT_MODAL__ = null;
             zoneLeft.removeEventListener('click', onLeftClick);
             zoneRight.removeEventListener('click', onRightClick);
             if (progressWrap) {
@@ -3852,7 +4779,737 @@
       },
     };
 
-/* ---------- 웹 오디오 형광등 점등 효과음 (스위치 딸깍 + 초크 스타터 지직- 스파크 + 점등 험) ---------- */
+    /* ==============================================================
+       장면 47 (서점 비둘기의 독서 시간)
+       - 눈 그래픽이 살짝 아래를 보고 있다가 대사가 입력되면서 같이 정면을 봄
+       - paper 그래픽이 파란 책 커버 중앙에 위치하여 약간 좌우로 움직임
+       - steam 파일이 머그잔 위에서 김이 펄펄 피어오름
+       ============================================================== */
+    window.SCENES[47] = {
+      mount(el, app) {
+        el.innerHTML = `
+          <img class="bg" src="01_backgrounds/47.png" alt="">
+          <div class="character-eyes looking-down">
+            <img src="02_motions/47_eyes.png" alt="">
+          </div>
+          <div class="book-paper">
+            <img src="02_motions/47_paper.png" alt="">
+          </div>
+          <div class="mug-steam-wrap">
+            <div class="steam-haze"></div>
+            <svg class="steam-wisp wisp-1" viewBox="0 0 24 64"><path d="M12 63 C6 56 6 48 11 41 C16 34 17 26 12 19 C9 14 9 8 13 2 C14 1 15 1 15 2 C13 8 14 13 16 18 C21 26 20 35 15 42 C11 48 11 56 13 62 C13 63.5 12.5 63.5 12 63 Z"/></svg>
+            <svg class="steam-wisp wisp-2" viewBox="0 0 24 64"><path d="M12 63 C6 56 6 48 11 41 C16 34 17 26 12 19 C9 14 9 8 13 2 C14 1 15 1 15 2 C13 8 14 13 16 18 C21 26 20 35 15 42 C11 48 11 56 13 62 C13 63.5 12.5 63.5 12 63 Z"/></svg>
+            <svg class="steam-wisp wisp-3" viewBox="0 0 24 64"><path d="M12 63 C6 56 6 48 11 41 C16 34 17 26 12 19 C9 14 9 8 13 2 C14 1 15 1 15 2 C13 8 14 13 16 18 C21 26 20 35 15 42 C11 48 11 56 13 62 C13 63.5 12.5 63.5 12 63 Z"/></svg>
+            <svg class="steam-wisp wisp-4" viewBox="0 0 24 64"><path d="M12 63 C6 56 6 48 11 41 C16 34 17 26 12 19 C9 14 9 8 13 2 C14 1 15 1 15 2 C13 8 14 13 16 18 C21 26 20 35 15 42 C11 48 11 56 13 62 C13 63.5 12.5 63.5 12 63 Z"/></svg>
+          </div>
+          <div class="scene-clear-filter"></div>
+          <div class="dialog-wrap red">
+            <img class="dialog-bg" src="02_motions/06 Red text background .png" alt="">
+            <div class="dialog-text">
+              <span class="speaker"></span>
+              <span class="dialog-body"></span>
+            </div>
+          </div>
+        `;
+
+        const eyesEl = el.querySelector('.character-eyes');
+        const speakerEl = el.querySelector('.speaker');
+        const bodyEl = el.querySelector('.dialog-body');
+
+        // 대사가 시작되면서 눈을 살포시 들어 정면 응시
+        const lookTimer = setTimeout(() => {
+          if (eyesEl) eyesEl.classList.remove('looking-down');
+        }, 350);
+
+        // 레드 대화창 규칙: P: (#D13D79) / 대사 (#FFFAE1, 48px, DungGeunMo)
+        const typing = typeDialog(
+          speakerEl,
+          'P: ',
+          bodyEl,
+          '어떠신가요, 마음에 드는 책을 찾으셨습니까?',
+          45,
+          350
+        );
+
+        const onClick = (e) => {
+          if (e.button !== 0) return;
+          if (!typing.isFinished()) {
+            typing.finish();
+            if (eyesEl) eyesEl.classList.remove('looking-down');
+          } else {
+            app.next('fade');
+          }
+        };
+
+        el.addEventListener('click', onClick);
+
+        return {
+          unmount() {
+            clearTimeout(lookTimer);
+            typing.stop();
+            el.removeEventListener('click', onClick);
+          },
+        };
+      },
+    };
+
+    
+    /* ==============================================================
+       장면 48 (일어선 비둘기)
+       - 대사: 'P: 오랜만에 찾아온 온기를 보내주려니 아쉽군요.'
+       - 왼손 책 위 paper 모션
+       - 오른손 머그잔 위 steam 3줄 모션
+       ============================================================== */
+    window.SCENES[48] = {
+      mount(el, app) {
+        el.innerHTML = `
+          <img class="bg" src="01_backgrounds/48.png" alt="">
+          <div class="book-paper">
+            <img src="02_motions/47_paper.png" alt="">
+          </div>
+          <div class="mug-steam-wrap">
+            <div class="steam-haze"></div>
+            <svg class="steam-wisp wisp-1" viewBox="0 0 24 64"><path d="M12 63 C6 56 6 48 11 41 C16 34 17 26 12 19 C9 14 9 8 13 2 C14 1 15 1 15 2 C13 8 14 13 16 18 C21 26 20 35 15 42 C11 48 11 56 13 62 C13 63.5 12.5 63.5 12 63 Z"/></svg>
+            <svg class="steam-wisp wisp-2" viewBox="0 0 24 64"><path d="M12 63 C6 56 6 48 11 41 C16 34 17 26 12 19 C9 14 9 8 13 2 C14 1 15 1 15 2 C13 8 14 13 16 18 C21 26 20 35 15 42 C11 48 11 56 13 62 C13 63.5 12.5 63.5 12 63 Z"/></svg>
+            <svg class="steam-wisp wisp-3" viewBox="0 0 24 64"><path d="M12 63 C6 56 6 48 11 41 C16 34 17 26 12 19 C9 14 9 8 13 2 C14 1 15 1 15 2 C13 8 14 13 16 18 C21 26 20 35 15 42 C11 48 11 56 13 62 C13 63.5 12.5 63.5 12 63 Z"/></svg>
+            <svg class="steam-wisp wisp-4" viewBox="0 0 24 64"><path d="M12 63 C6 56 6 48 11 41 C16 34 17 26 12 19 C9 14 9 8 13 2 C14 1 15 1 15 2 C13 8 14 13 16 18 C21 26 20 35 15 42 C11 48 11 56 13 62 C13 63.5 12.5 63.5 12 63 Z"/></svg>
+          </div>
+          <div class="scene-clear-filter"></div>
+          <div class="dialog-wrap red">
+            <img class="dialog-bg" src="02_motions/06 Red text background .png" alt="">
+            <div class="dialog-text">
+              <span class="speaker"></span>
+              <span class="dialog-body"></span>
+            </div>
+          </div>
+        `;
+
+        const speakerEl = el.querySelector('.speaker');
+        const bodyEl = el.querySelector('.dialog-body');
+
+        // 레드 대화창 규칙: P: (#D13D79) / 대사 (#FFFAE1, 48px, DungGeunMo)
+        const typing = typeDialog(
+          speakerEl,
+          'P: ',
+          bodyEl,
+          '오랜만에 찾아온 온기를 보내주려니 아쉽군요.',
+          45,
+          350
+        );
+
+        const onClick = (e) => {
+          if (e.button !== 0) return;
+          if (!typing.isFinished()) {
+            typing.finish();
+          } else {
+            app.next('fade');
+          }
+        };
+
+        el.addEventListener('click', onClick);
+
+        return {
+          unmount() {
+            typing.stop();
+            el.removeEventListener('click', onClick);
+          },
+        };
+      },
+    };
+
+
+    /* ==============================================================
+       장면 49 (배웅하는 비둘기 클로즈업)
+       - 대사: 'P: 제가 그리워지면 다시 이곳 책방을 찾아주세요.'
+       ============================================================== */
+    window.SCENES[49] = {
+      mount(el, app) {
+        el.innerHTML = `
+          <img class="bg" src="01_backgrounds/49.png" alt="">
+          <div class="scene-clear-filter"></div>
+          <div class="dialog-wrap red">
+            <img class="dialog-bg" src="02_motions/06 Red text background .png" alt="">
+            <div class="dialog-text">
+              <span class="speaker"></span>
+              <span class="dialog-body"></span>
+            </div>
+          </div>
+        `;
+
+        const speakerEl = el.querySelector('.speaker');
+        const bodyEl = el.querySelector('.dialog-body');
+
+        // 레드 대화창 규칙: P: (#D13D79) / 대사 (#FFFAE1, 48px, DungGeunMo)
+        const typing = typeDialog(
+          speakerEl,
+          'P: ',
+          bodyEl,
+          '제가 그리워지면 다시 이곳 책방을 찾아주세요.',
+          45,
+          350
+        );
+
+        const onClick = (e) => {
+          if (e.button !== 0) return;
+          if (!typing.isFinished()) {
+            typing.finish();
+          } else {
+            app.next('fade');
+          }
+        };
+
+        el.addEventListener('click', onClick);
+
+        return {
+          unmount() {
+            typing.stop();
+            el.removeEventListener('click', onClick);
+          },
+        };
+      },
+    };
+
+
+    /* ==============================================================
+       장면 50 (침묵 속 시선 이동: 아래 -> 비둘기 기준 정면 -> 카메라 쪽 흰자 정중앙)
+       - 대사: 'P: .........'
+       ============================================================== */
+    window.SCENES[50] = {
+      mount(el, app) {
+        el.innerHTML = `
+          <img class="bg" src="01_backgrounds/50.png" alt="">
+          <div class="pigeon-pupil">
+            <img src="02_motions/50_eye.png" alt="">
+          </div>
+          <div class="scene-clear-filter"></div>
+          <div class="dialog-wrap red">
+            <img class="dialog-bg" src="02_motions/06 Red text background .png" alt="">
+            <div class="dialog-text">
+              <span class="speaker"></span>
+              <span class="dialog-body"></span>
+            </div>
+          </div>
+        `;
+
+        const pupilEl = el.querySelector('.pigeon-pupil');
+        const speakerEl = el.querySelector('.speaker');
+        const bodyEl = el.querySelector('.dialog-body');
+
+        // 1단계(아래 응시) -> 2단계(비둘기 기준 정면 응시) -> 3단계(카메라 쪽 흰자 정중앙 응시)
+        let isEyeDone = false;
+        const timerStep2 = setTimeout(() => {
+          if (pupilEl && !isEyeDone) {
+            pupilEl.classList.add('look-front');
+          }
+        }, 300);
+
+        const timerStep3 = setTimeout(() => {
+          if (pupilEl) {
+            isEyeDone = true;
+            pupilEl.classList.remove('look-front');
+            pupilEl.classList.add('look-camera');
+          }
+        }, 1050);
+
+        // 레드 대화창 규칙: P: (#D13D79) / 대사 (#FFFAE1, 48px, DungGeunMo)
+        const typing = typeDialog(
+          speakerEl,
+          'P: ',
+          bodyEl,
+          '.........',
+          80,
+          350
+        );
+
+        const onClick = (e) => {
+          if (e.button !== 0) return;
+          if (!typing.isFinished() || !isEyeDone) {
+            typing.finish();
+            isEyeDone = true;
+            clearTimeout(timerStep2);
+            clearTimeout(timerStep3);
+            if (pupilEl) {
+              pupilEl.classList.remove('look-front');
+              pupilEl.classList.add('look-camera');
+            }
+          } else {
+            app.next('fade');
+          }
+        };
+
+        el.addEventListener('click', onClick);
+
+        return {
+          unmount() {
+            clearTimeout(timerStep2);
+            clearTimeout(timerStep3);
+            typing.stop();
+            el.removeEventListener('click', onClick);
+          },
+        };
+      },
+    };
+
+    /* ==============================================================
+       장면 51 (뒤쪽 액자가 드러나며 시치미 떼는 비둘기)
+       - 대사: 'P: 저 말고 책 말입니다.'
+       ============================================================== */
+    window.SCENES[51] = {
+      mount(el, app) {
+        el.innerHTML = `
+          <img class="bg" src="01_backgrounds/51.png" alt="">
+          <div class="scene-clear-filter"></div>
+          <div class="dialog-wrap red">
+            <img class="dialog-bg" src="02_motions/06 Red text background .png" alt="">
+            <div class="dialog-text">
+              <span class="speaker"></span>
+              <span class="dialog-body"></span>
+            </div>
+          </div>
+        `;
+
+        const speakerEl = el.querySelector('.speaker');
+        const bodyEl = el.querySelector('.dialog-body');
+
+        // 레드 대화창 규칙: P: (#D13D79) / 대사 (#FFFAE1, 48px, DungGeunMo)
+        const typing = typeDialog(
+          speakerEl,
+          'P: ',
+          bodyEl,
+          '저 말고 책 말입니다.',
+          45,
+          350
+        );
+
+        const onClick = (e) => {
+          if (e.button !== 0) return;
+          if (!typing.isFinished()) {
+            typing.finish();
+          } else {
+            app.next('fade');
+          }
+        };
+
+        el.addEventListener('click', onClick);
+
+        return {
+          unmount() {
+            typing.stop();
+            el.removeEventListener('click', onClick);
+          },
+        };
+      },
+    };
+
+    /* ==============================================================
+       장면 52 (벽면 액자 클로즈업)
+       - 대사: 'You: (저 사진은 뭐지?)'
+       ============================================================== */
+    window.SCENES[52] = {
+      mount(el, app) {
+        el.innerHTML = `
+          <img class="bg" src="01_backgrounds/52.png" alt="">
+          <div class="scene-clear-filter"></div>
+          <div class="dialog-wrap green">
+            <img class="dialog-bg" src="02_motions/03 ,05, 07, 13, 36 Green text background .png" alt="">
+            <div class="dialog-text">
+              <span class="speaker"></span>
+              <span class="dialog-body"></span>
+            </div>
+          </div>
+        `;
+
+        const speakerEl = el.querySelector('.speaker');
+        const bodyEl = el.querySelector('.dialog-body');
+
+        // 그린 대화창 규칙: You: (#308DA4) / 대사 (#FFFAE1, 48px, DungGeunMo)
+        const typing = typeDialog(
+          speakerEl,
+          'You: ',
+          bodyEl,
+          '(저 사진은 뭐지?)',
+          45,
+          350
+        );
+
+        const onClick = (e) => {
+          if (e.button !== 0) return;
+          if (!typing.isFinished()) {
+            typing.finish();
+          } else {
+            app.next('fade');
+          }
+        };
+
+        el.addEventListener('click', onClick);
+
+        return {
+          unmount() {
+            typing.stop();
+            el.removeEventListener('click', onClick);
+          },
+        };
+      },
+    };
+
+    /* ==============================================================
+       장면 53 (벽면 액자 정면 클로즈업)
+       - 대사: 'You: (아, 그 친구인가? 오래전에 책을 선물했다던...)'
+       ============================================================== */
+    window.SCENES[53] = {
+      mount(el, app) {
+        el.innerHTML = `
+          <img class="bg" src="01_backgrounds/53.png" alt="">
+          <div class="scene-clear-filter"></div>
+          <div class="dialog-wrap green">
+            <img class="dialog-bg" src="02_motions/03 ,05, 07, 13, 36 Green text background .png" alt="">
+            <div class="dialog-text">
+              <span class="speaker"></span>
+              <span class="dialog-body"></span>
+            </div>
+          </div>
+        `;
+
+        const speakerEl = el.querySelector('.speaker');
+        const bodyEl = el.querySelector('.dialog-body');
+
+        // 그린 대화창 규칙: You: (#308DA4) / 대사 (#FFFAE1, 48px, DungGeunMo)
+        const typing = typeDialog(
+          speakerEl,
+          'You: ',
+          bodyEl,
+          '(아, 그 친구인가? 오래전에 책을 선물했다던...)',
+          45,
+          350
+        );
+
+        const onClick = (e) => {
+          if (e.button !== 0) return;
+          if (!typing.isFinished()) {
+            typing.finish();
+          } else {
+            app.next('fade');
+          }
+        };
+
+        el.addEventListener('click', onClick);
+
+        return {
+          unmount() {
+            typing.stop();
+            el.removeEventListener('click', onClick);
+          },
+        };
+      },
+    };
+
+    /* ==============================================================
+       장면 54 (액자 앞을 슥 가로막으며 불쑥 나타나는 비둘기)
+       - 대사 없음, 슥- 하고 나타나는 효과음 재생
+       ============================================================== */
+    window.SCENES[54] = {
+      mount(el, app) {
+        el.innerHTML = `
+          <img class="bg" src="01_backgrounds/54.png" alt="">
+          <div class="scene-clear-filter"></div>
+        `;
+
+        playSwooshAppearSound();
+
+        const onClick = (e) => {
+          if (e.button !== 0) return;
+          app.next('fade');
+        };
+
+        el.addEventListener('click', onClick);
+
+        return {
+          unmount() {
+            el.removeEventListener('click', onClick);
+          },
+        };
+      },
+    };
+
+    /* ==============================================================
+       장면 55 (정면 클로즈업 비둘기 + lip.png 대사 발화 상하 움직임)
+       - 대사: 'P: 안 오고 뭐 하십니까?'
+       ============================================================== */
+    window.SCENES[55] = {
+      mount(el, app) {
+        el.innerHTML = `
+          <img class="bg" src="01_backgrounds/55.png" alt="">
+          <div class="pigeon-lip">
+            <img src="02_motions/lip.png" alt="">
+          </div>
+          <div class="scene-clear-filter"></div>
+          <div class="dialog-wrap red">
+            <img class="dialog-bg" src="02_motions/06 Red text background .png" alt="">
+            <div class="dialog-text">
+              <span class="speaker"></span>
+              <span class="dialog-body"></span>
+            </div>
+          </div>
+        `;
+
+        const lipEl = el.querySelector('.pigeon-lip');
+        const speakerEl = el.querySelector('.speaker');
+        const bodyEl = el.querySelector('.dialog-body');
+
+        // '안 오고 뭐 하십니까?' 음절별 아랫입술 열림 높이(0px=y642.85 닫힘 ~ 12.6px=y655.45 열림)
+        // 인덱스: 0:'P', 1:':', 2:' ', 3:'안', 4:' ', 5:'오', 6:'고', 7:' ', 8:'뭐', 9:' ', 10:'하', 11:'십', 12:'니', 13:'까', 14:'?'
+        const lipOffsets = {
+          3: 12.6,  // '안' (크게 열림)
+          4: 2.0,   // ' '  (살짝 닫힘)
+          5: 11.2,  // '오' (열림)
+          6: 8.5,   // '고' (중간 열림)
+          7: 1.5,   // ' '  (닫힘)
+          8: 12.6,  // '뭐' (크게 열림)
+          9: 2.0,   // ' '  (닫힘)
+          10: 12.6, // '하' (크게 열림)
+          11: 1.0,  // '십' (ㅂ 받침에서 입술 닫힘)
+          12: 9.8,  // '니' (다시 열림)
+          13: 12.6, // '까' (크게 열림)
+          14: 0     // '?'  (발화 종료 후 다묾)
+        };
+
+        let lipCloseTimer = null;
+
+        const setLipY = (dy) => {
+          if (!lipEl) return;
+          lipEl.style.transform = `translate3d(0, ${dy}px, 0)`;
+        };
+
+        // 레드 대화창 규칙: P: (#D13D79) / 대사 (#FFFAE1, 48px, DungGeunMo)
+        const typing = typeDialog(
+          speakerEl,
+          'P: ',
+          bodyEl,
+          '안 오고 뭐 하십니까?',
+          65,
+          350,
+          {
+            onChar(charIdx) {
+              if (charIdx in lipOffsets) {
+                setLipY(lipOffsets[charIdx]);
+                // 같은 모음이 이어지거나 음절 내부에서도 자연스러운 상하 반동을 주도록 미세 닫힘 스케줄링
+                clearTimeout(lipCloseTimer);
+                if (lipOffsets[charIdx] > 4) {
+                  lipCloseTimer = setTimeout(() => {
+                    if (!typing.isFinished()) {
+                      setLipY(2.2);
+                    }
+                  }, 42);
+                }
+              }
+            },
+            onComplete() {
+              clearTimeout(lipCloseTimer);
+              setLipY(0);
+            }
+          }
+        );
+
+        const onClick = (e) => {
+          if (e.button !== 0) return;
+          if (!typing.isFinished()) {
+            clearTimeout(lipCloseTimer);
+            typing.finish();
+            setLipY(0);
+          } else {
+            app.next('fade');
+          }
+        };
+
+        el.addEventListener('click', onClick);
+
+        return {
+          unmount() {
+            clearTimeout(lipCloseTimer);
+            typing.stop();
+            el.removeEventListener('click', onClick);
+          },
+        };
+      },
+    };
+
+    /* ==============================================================
+       장면 56 (앞서 걸어가며 안내하는 비둘기)
+       - 대사: 'P: 조심해서 잘 따라오셔야죠.'
+       ============================================================== */
+    window.SCENES[56] = {
+      mount(el, app) {
+        el.innerHTML = `
+          <img class="bg" src="01_backgrounds/56.png" alt="">
+          <div class="scene-clear-filter"></div>
+          <div class="dialog-wrap red">
+            <img class="dialog-bg" src="02_motions/06 Red text background .png" alt="">
+            <div class="dialog-text">
+              <span class="speaker"></span>
+              <span class="dialog-body"></span>
+            </div>
+          </div>
+        `;
+
+        const speakerEl = el.querySelector('.speaker');
+        const bodyEl = el.querySelector('.dialog-body');
+
+        // 레드 대화창 규칙: P: (#D13D79) / 대사 (#FFFAE1, 48px, DungGeunMo)
+        const typing = typeDialog(
+          speakerEl,
+          'P: ',
+          bodyEl,
+          '조심해서 잘 따라오셔야죠.',
+          45,
+          350
+        );
+
+        const onClick = (e) => {
+          if (e.button !== 0) return;
+          if (!typing.isFinished()) {
+            typing.finish();
+          } else {
+            app.next('fade');
+          }
+        };
+
+        el.addEventListener('click', onClick);
+
+        return {
+          unmount() {
+            typing.stop();
+            el.removeEventListener('click', onClick);
+          },
+        };
+      },
+    };
+
+    /* ==============================================================
+       장면 57 (걸어 내려가며 말을 잇는 비둘기)
+       - 대사: 'P: 이곳의 어둠은 투구꽃의 독처럼 무섭고 위험하답니다.'
+       ============================================================== */
+    window.SCENES[57] = {
+      mount(el, app) {
+        el.innerHTML = `
+          <img class="bg" src="01_backgrounds/57.png" alt="">
+          <div class="scene-clear-filter"></div>
+          <div class="dialog-wrap red">
+            <img class="dialog-bg" src="02_motions/06 Red text background .png" alt="">
+            <div class="dialog-text">
+              <span class="speaker"></span>
+              <span class="dialog-body"></span>
+            </div>
+          </div>
+        `;
+
+        const speakerEl = el.querySelector('.speaker');
+        const bodyEl = el.querySelector('.dialog-body');
+
+        // 레드 대화창 규칙: P: (#D13D79) / 대사 (#FFFAE1, 48px, DungGeunMo)
+        const typing = typeDialog(
+          speakerEl,
+          'P: ',
+          bodyEl,
+          '이곳의 어둠은 투구꽃의 독처럼 무섭고 위험하답니다.',
+          45,
+          350
+        );
+
+        const onClick = (e) => {
+          if (e.button !== 0) return;
+          if (!typing.isFinished()) {
+            typing.finish();
+          } else {
+            app.next('fade');
+          }
+        };
+
+        el.addEventListener('click', onClick);
+
+        return {
+          unmount() {
+            typing.stop();
+            el.removeEventListener('click', onClick);
+          },
+        };
+      },
+    };
+
+    /* ---------- 웹 오디오 '슥-' 등장 효과음 합성 재생 (54번 장면) ---------- */
+    function playSwooshAppearSound() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        if (ctx.state === 'suspended') {
+          ctx.resume();
+        }
+        const now = ctx.currentTime;
+
+        // 1. 깃털/옷감이 슥- 스치며 올라오는 소프트 노이즈 스우시
+        const dur = 0.28;
+        const bufferSize = Math.floor(ctx.sampleRate * dur);
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        let lastOut = 0;
+        for (let i = 0; i < bufferSize; i++) {
+          const white = Math.random() * 2 - 1;
+          // 부드러운 핑크/브라운 계열 질감으로 거친 치찰음 완화
+          lastOut = (lastOut + 0.12 * white) / 1.12;
+          const env = Math.sin((i / bufferSize) * Math.PI);
+          data[i] = lastOut * 2.6 * env;
+        }
+
+        const noise = ctx.createBufferSource();
+        noise.buffer = buffer;
+
+        const bandpass = ctx.createBiquadFilter();
+        bandpass.type = 'bandpass';
+        bandpass.Q.setValueAtTime(2.0, now + 0.03);
+        bandpass.frequency.setValueAtTime(320, now + 0.03);
+        bandpass.frequency.exponentialRampToValueAtTime(1180, now + 0.16);
+        bandpass.frequency.exponentialRampToValueAtTime(640, now + 0.30);
+
+        const noiseGain = ctx.createGain();
+        noiseGain.gain.setValueAtTime(0.001, now + 0.03);
+        noiseGain.gain.linearRampToValueAtTime(0.42, now + 0.11);
+        noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.31);
+
+        noise.connect(bandpass);
+        bandpass.connect(noiseGain);
+        noiseGain.connect(ctx.destination);
+        noise.start(now + 0.03);
+
+        // 2. 불쑥 고개를 내밀 때의 부드러운 저음역 공기감 ('슥-')
+        const osc = ctx.createOscillator();
+        const oscFilter = ctx.createBiquadFilter();
+        const oscGain = ctx.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(115, now + 0.04);
+        osc.frequency.exponentialRampToValueAtTime(175, now + 0.15);
+        osc.frequency.exponentialRampToValueAtTime(105, now + 0.27);
+
+        oscFilter.type = 'lowpass';
+        oscFilter.frequency.setValueAtTime(260, now + 0.04);
+
+        oscGain.gain.setValueAtTime(0.001, now + 0.04);
+        oscGain.gain.linearRampToValueAtTime(0.20, now + 0.11);
+        oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.27);
+
+        osc.connect(oscFilter);
+        oscFilter.connect(oscGain);
+        oscGain.connect(ctx.destination);
+        osc.start(now + 0.04);
+        osc.stop(now + 0.28);
+      } catch (e) {
+        console.warn('Swoosh sound error:', e);
+      }
+    }
+
+
+
+    /* ---------- 웹 오디오 형광등 점등 효과음 (스위치 딸깍 + 초크 스타터 지직- 스파크 + 점등 험) ---------- */
     function playSwitchSound() {
       try {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -4224,27 +5881,142 @@
         current.scene = def.mount(el, api) || {};
 
         // 대화창 맨 아래 줄 또는 대화창 없는 화면의 최상단 레이어에 '현재장면/70' 번호 표기 자동 부착
-        // 단, 책 읽는 화면(47장면 등)은 화면 넘버링에서 완전 제외
-        const isReader = (n === 47 || def.isReader === true || el.classList.contains('scene-47'));
+        // 단, 책 읽는 화면(독서 모드)은 화면 넘버링에서 완전 제외
+        const isReader = (n === 'reader' || def.isReader === true || el.classList.contains('scene-reader'));
         if (!isReader) {
           const sceneNum = (n >= 1 && n <= 20) ? (n + 20) : n;
-          const dialogWraps = el.querySelectorAll('.dialog-wrap');
-          if (dialogWraps.length > 0) {
-            dialogWraps.forEach((dw) => {
-              if (!dw.querySelector('.scene-counter')) {
-                const counterEl = document.createElement('div');
-                counterEl.className = 'scene-counter';
-                counterEl.textContent = `${sceneNum}/70`;
-                dw.appendChild(counterEl);
-              }
-            });
-          } else {
-            if (!el.querySelector('.scene-counter')) {
+          const navList = [];
+          for (let p = 21; p <= 70; p++) {
+            const k = (p <= 40 && window.SCENES[p - 20]) ? (p - 20) : p;
+            if (window.SCENES[k]) navList.push({ key: k, pageNum: p });
+          }
+          const curIdx = Math.max(0, navList.findIndex((item) => item.pageNum === sceneNum));
+          const maxIdx = Math.max(1, navList.length - 1);
+          const ratio = curIdx / maxIdx;
+          const fillWidth = (curIdx === maxIdx) ? '100%' : `${Math.max(10, Math.round(10 + (860 - 10) * ratio))}px`;
+
+          const attachCounterAndProgress = (container) => {
+            if (!container.querySelector('.scene-counter')) {
               const counterEl = document.createElement('div');
               counterEl.className = 'scene-counter';
               counterEl.textContent = `${sceneNum}/70`;
-              el.appendChild(counterEl);
+              counterEl.title = '더블클릭하여 페이지 이동 척도바 열기/닫기';
+              ['mousedown', 'pointerdown', 'click'].forEach((ev) => {
+                counterEl.addEventListener(ev, (e) => e.stopPropagation());
+              });
+              counterEl.addEventListener('dblclick', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                window.__SCENE_PROGRESS_OPEN__ = !window.__SCENE_PROGRESS_OPEN__;
+                stage.querySelectorAll('.scene-progress-wrap').forEach((w) => {
+                  w.classList.toggle('open', !!window.__SCENE_PROGRESS_OPEN__);
+                });
+              });
+              container.appendChild(counterEl);
             }
+            if (!container.querySelector('.scene-progress-wrap')) {
+              const wrapEl = document.createElement('div');
+              wrapEl.className = 'scene-progress-wrap' +
+                (window.__SCENE_PROGRESS_OPEN__ ? ' open' : '') +
+                (window.__SCENE_PROGRESS_DRAGGING__ ? ' dragging' : '');
+              if (typeof window.__SCENE_PROGRESS_HOVER_RATIO__ === 'number') {
+                wrapEl.style.setProperty('--hover-ratio', window.__SCENE_PROGRESS_HOVER_RATIO__);
+              }
+              wrapEl.innerHTML = `
+                <div class="scene-progress-bar">
+                  <div class="scene-progress-hover"></div>
+                  <div class="scene-progress-fill" style="width: ${fillWidth};"></div>
+                </div>
+              `;
+              const barEl = wrapEl.querySelector('.scene-progress-bar');
+              const updateHover = (e) => {
+                const rect = barEl.getBoundingClientRect();
+                if (rect.width <= 0) return;
+                const r = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+                window.__SCENE_PROGRESS_HOVER_RATIO__ = r;
+                wrapEl.style.setProperty('--hover-ratio', r);
+                const hoverIdx = Math.max(0, Math.min(navList.length - 1, Math.round(r * maxIdx)));
+                if (navList[hoverIdx]) {
+                  wrapEl.title = `${navList[hoverIdx].pageNum}/70 페이지로 이동`;
+                }
+              };
+              wrapEl.addEventListener('pointerenter', updateHover);
+              wrapEl.addEventListener('pointermove', updateHover);
+              ['click', 'dblclick'].forEach((ev) => {
+                wrapEl.addEventListener(ev, (e) => e.stopPropagation());
+              });
+
+              const seekSceneByClientX = (clientX) => {
+                const activeBar = stage.querySelector('.scene-progress-bar') || barEl;
+                const rect = activeBar.getBoundingClientRect();
+                if (rect.width <= 0 || navList.length === 0) return;
+                const r = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+                window.__SCENE_PROGRESS_HOVER_RATIO__ = r;
+                const targetIdx = Math.max(0, Math.min(navList.length - 1, Math.round(r * maxIdx)));
+                const target = navList[targetIdx];
+                if (!target) return;
+                const curPageNum = (current && current.n >= 1 && current.n <= 20) ? (current.n + 20) : (current && current.n);
+                if (curPageNum !== target.pageNum) {
+                  goTo(target.key, 'none');
+                }
+              };
+
+              wrapEl.addEventListener('mousedown', (e) => {
+                if (e.button !== 0) return;
+                e.preventDefault();
+                e.stopPropagation();
+                window.__SCENE_PROGRESS_DRAGGING__ = true;
+                stage.querySelectorAll('.scene-progress-wrap').forEach((w) => w.classList.add('dragging'));
+                seekSceneByClientX(e.clientX);
+                const onMove = (ev) => {
+                  if (!window.__SCENE_PROGRESS_DRAGGING__) return;
+                  ev.preventDefault();
+                  seekSceneByClientX(ev.clientX);
+                };
+                const onUp = () => {
+                  window.__SCENE_PROGRESS_DRAGGING__ = false;
+                  stage.querySelectorAll('.scene-progress-wrap').forEach((w) => w.classList.remove('dragging'));
+                  window.removeEventListener('mousemove', onMove);
+                  window.removeEventListener('mouseup', onUp);
+                  window.removeEventListener('blur', onUp);
+                };
+                window.addEventListener('mousemove', onMove);
+                window.addEventListener('mouseup', onUp);
+                window.addEventListener('blur', onUp);
+              });
+
+              wrapEl.addEventListener('touchstart', (e) => {
+                if (e.touches.length !== 1) return;
+                e.stopPropagation();
+                window.__SCENE_PROGRESS_DRAGGING__ = true;
+                stage.querySelectorAll('.scene-progress-wrap').forEach((w) => w.classList.add('dragging'));
+                seekSceneByClientX(e.touches[0].clientX);
+                const onTouchMove = (ev) => {
+                  if (!window.__SCENE_PROGRESS_DRAGGING__ || ev.touches.length !== 1) return;
+                  ev.preventDefault();
+                  seekSceneByClientX(ev.touches[0].clientX);
+                };
+                const onTouchEnd = () => {
+                  window.__SCENE_PROGRESS_DRAGGING__ = false;
+                  stage.querySelectorAll('.scene-progress-wrap').forEach((w) => w.classList.remove('dragging'));
+                  window.removeEventListener('touchmove', onTouchMove);
+                  window.removeEventListener('touchend', onTouchEnd);
+                  window.removeEventListener('touchcancel', onTouchEnd);
+                };
+                window.addEventListener('touchmove', onTouchMove, { passive: false });
+                window.addEventListener('touchend', onTouchEnd);
+                window.addEventListener('touchcancel', onTouchEnd);
+              }, { passive: true });
+
+              container.appendChild(wrapEl);
+            }
+          };
+
+          const dialogWraps = el.querySelectorAll('.dialog-wrap');
+          if (dialogWraps.length > 0) {
+            dialogWraps.forEach((dw) => attachCounterAndProgress(dw));
+          } else {
+            attachCounterAndProgress(el);
           }
         }
 
@@ -4304,12 +6076,13 @@
           return goTo(current.n + 1, transition);
         },
         prev: (transition) => {
+          if (current && current.n === 'reader') return goTo(46, transition);
           if (current && current.n === 41) return goTo(20, transition);
           return goTo(Math.max(1, current.n - 1), transition);
         },
         openReader: (bookIdx = 1) => {
           window.CURRENT_BOOK_ID = bookIdx;
-          goTo(47, 'fade');
+          goTo('reader', 'fade');
         },
         get current() { return current && current.n; },
       };
@@ -4318,6 +6091,14 @@
       // 마우스 우클릭 시 이전 장면으로 이동
       window.addEventListener('contextmenu', (e) => {
         e.preventDefault();
+        if (current && current.n === 'reader') {
+          if (window.__READER_SHOW_EXIT_MODAL__) {
+            window.__READER_SHOW_EXIT_MODAL__();
+            return;
+          }
+          api.goTo(46, 'fade');
+          return;
+        }
         if (current && current.n > 1) {
           api.prev('fade');
         }

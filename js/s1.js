@@ -1589,23 +1589,135 @@
         // 대화창 맨 아래 줄 또는 대화창 없는 화면의 최상단 레이어에 '현재장면/70' 번호 표기 자동 부착 (대기화면 제외)
         if (n !== 1) { // 대기화면(Scene 1) 제외
           const displayNum = Math.max(1, n - 1);
-          const dialogWraps = el.querySelectorAll('.dialog-wrap');
-          if (dialogWraps.length > 0) {
-            dialogWraps.forEach((dw) => {
-              if (!dw.querySelector('.scene-counter')) {
-                const counterEl = document.createElement('div');
-                counterEl.className = 'scene-counter';
-                counterEl.textContent = `${displayNum}/70`;
-                dw.appendChild(counterEl);
-              }
-            });
-          } else {
-            if (!el.querySelector('.scene-counter')) {
+          const navList = [];
+          for (let k = 2; k <= 20; k++) {
+            if (window.SCENES[k]) navList.push({ key: k, pageNum: k - 1 });
+          }
+          const curIdx = Math.max(0, navList.findIndex((item) => item.key === n));
+          const maxIdx = Math.max(1, navList.length - 1);
+          const ratio = curIdx / maxIdx;
+          const fillWidth = (curIdx === maxIdx) ? '100%' : `${Math.max(10, Math.round(10 + (860 - 10) * ratio))}px`;
+
+          const attachCounterAndProgress = (container) => {
+            if (!container.querySelector('.scene-counter')) {
               const counterEl = document.createElement('div');
               counterEl.className = 'scene-counter';
               counterEl.textContent = `${displayNum}/70`;
-              el.appendChild(counterEl);
+              counterEl.title = '더블클릭하여 페이지 이동 척도바 열기/닫기';
+              ['mousedown', 'pointerdown', 'click'].forEach((ev) => {
+                counterEl.addEventListener(ev, (e) => e.stopPropagation());
+              });
+              counterEl.addEventListener('dblclick', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                window.__SCENE_PROGRESS_OPEN__ = !window.__SCENE_PROGRESS_OPEN__;
+                stage.querySelectorAll('.scene-progress-wrap').forEach((w) => {
+                  w.classList.toggle('open', !!window.__SCENE_PROGRESS_OPEN__);
+                });
+              });
+              container.appendChild(counterEl);
             }
+            if (!container.querySelector('.scene-progress-wrap')) {
+              const wrapEl = document.createElement('div');
+              wrapEl.className = 'scene-progress-wrap' +
+                (window.__SCENE_PROGRESS_OPEN__ ? ' open' : '') +
+                (window.__SCENE_PROGRESS_DRAGGING__ ? ' dragging' : '');
+              if (typeof window.__SCENE_PROGRESS_HOVER_RATIO__ === 'number') {
+                wrapEl.style.setProperty('--hover-ratio', window.__SCENE_PROGRESS_HOVER_RATIO__);
+              }
+              wrapEl.innerHTML = `
+                <div class="scene-progress-bar">
+                  <div class="scene-progress-hover"></div>
+                  <div class="scene-progress-fill" style="width: ${fillWidth};"></div>
+                </div>
+              `;
+              const barEl = wrapEl.querySelector('.scene-progress-bar');
+              const updateHover = (e) => {
+                const rect = barEl.getBoundingClientRect();
+                if (rect.width <= 0) return;
+                const r = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+                window.__SCENE_PROGRESS_HOVER_RATIO__ = r;
+                wrapEl.style.setProperty('--hover-ratio', r);
+                const hoverIdx = Math.max(0, Math.min(navList.length - 1, Math.round(r * maxIdx)));
+                if (navList[hoverIdx]) {
+                  wrapEl.title = `${navList[hoverIdx].pageNum}/70 페이지로 이동`;
+                }
+              };
+              wrapEl.addEventListener('pointerenter', updateHover);
+              wrapEl.addEventListener('pointermove', updateHover);
+              ['click', 'dblclick'].forEach((ev) => {
+                wrapEl.addEventListener(ev, (e) => e.stopPropagation());
+              });
+
+              const seekSceneByClientX = (clientX) => {
+                const activeBar = stage.querySelector('.scene-progress-bar') || barEl;
+                const rect = activeBar.getBoundingClientRect();
+                if (rect.width <= 0 || navList.length === 0) return;
+                const r = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+                window.__SCENE_PROGRESS_HOVER_RATIO__ = r;
+                const targetIdx = Math.max(0, Math.min(navList.length - 1, Math.round(r * maxIdx)));
+                const target = navList[targetIdx];
+                if (target && current && current.n !== target.key) {
+                  goTo(target.key, 'none');
+                }
+              };
+
+              wrapEl.addEventListener('mousedown', (e) => {
+                if (e.button !== 0) return;
+                e.preventDefault();
+                e.stopPropagation();
+                window.__SCENE_PROGRESS_DRAGGING__ = true;
+                stage.querySelectorAll('.scene-progress-wrap').forEach((w) => w.classList.add('dragging'));
+                seekSceneByClientX(e.clientX);
+                const onMove = (ev) => {
+                  if (!window.__SCENE_PROGRESS_DRAGGING__) return;
+                  ev.preventDefault();
+                  seekSceneByClientX(ev.clientX);
+                };
+                const onUp = () => {
+                  window.__SCENE_PROGRESS_DRAGGING__ = false;
+                  stage.querySelectorAll('.scene-progress-wrap').forEach((w) => w.classList.remove('dragging'));
+                  window.removeEventListener('mousemove', onMove);
+                  window.removeEventListener('mouseup', onUp);
+                  window.removeEventListener('blur', onUp);
+                };
+                window.addEventListener('mousemove', onMove);
+                window.addEventListener('mouseup', onUp);
+                window.addEventListener('blur', onUp);
+              });
+
+              wrapEl.addEventListener('touchstart', (e) => {
+                if (e.touches.length !== 1) return;
+                e.stopPropagation();
+                window.__SCENE_PROGRESS_DRAGGING__ = true;
+                stage.querySelectorAll('.scene-progress-wrap').forEach((w) => w.classList.add('dragging'));
+                seekSceneByClientX(e.touches[0].clientX);
+                const onTouchMove = (ev) => {
+                  if (!window.__SCENE_PROGRESS_DRAGGING__ || ev.touches.length !== 1) return;
+                  ev.preventDefault();
+                  seekSceneByClientX(ev.touches[0].clientX);
+                };
+                const onTouchEnd = () => {
+                  window.__SCENE_PROGRESS_DRAGGING__ = false;
+                  stage.querySelectorAll('.scene-progress-wrap').forEach((w) => w.classList.remove('dragging'));
+                  window.removeEventListener('touchmove', onTouchMove);
+                  window.removeEventListener('touchend', onTouchEnd);
+                  window.removeEventListener('touchcancel', onTouchEnd);
+                };
+                window.addEventListener('touchmove', onTouchMove, { passive: false });
+                window.addEventListener('touchend', onTouchEnd);
+                window.addEventListener('touchcancel', onTouchEnd);
+              }, { passive: true });
+
+              container.appendChild(wrapEl);
+            }
+          };
+
+          const dialogWraps = el.querySelectorAll('.dialog-wrap');
+          if (dialogWraps.length > 0) {
+            dialogWraps.forEach((dw) => attachCounterAndProgress(dw));
+          } else {
+            attachCounterAndProgress(el);
           }
         }
 

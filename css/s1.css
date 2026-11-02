@@ -700,3 +700,115 @@
     .dialog-wrap .scene-counter {
       right: 14px;
     }
+
+    /* ========== 우측 하단 페이지 번호 더블클릭 → 대사창 아래쪽 직사각형 칸(34px) 내 얇은 척도 바 ========== */
+    .scene-counter {
+      pointer-events: auto;
+      cursor: pointer;
+      padding: 6px 8px;
+      margin: -6px -8px;
+      z-index: 120;
+    }
+
+    .scene-progress-wrap {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 860px;
+      height: 34px; /* 대사창 아래쪽 직사각형 칸(182px~216px, 높이 34px) 정중앙 배치 */
+      z-index: 118;
+      pointer-events: auto;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      user-select: none;
+      touch-action: none;
+    }
+
+    .dialog-wrap .scene-progress-wrap {
+      left: calc(50% - 3px); /* .dialog-wrap 우측 6px 확장에 맞춘 스테이지 정중앙 정렬 */
+    }
+
+    .scene-progress-wrap.open {
+      display: flex;
+    }
+
+    .scene-progress-wrap.dragging {
+      cursor: grabbing;
+    }
+
+    .scene-progress-bar {
+      position: relative;
+      width: 100%;
+      height: 8px; /* 대사창 하단 직사각형 칸 안에 들어가는 얇은 척도 바 */
+      background: rgba(75, 15, 95, 0.38) url('02_motions/progress_bar.png') no-repeat center / 100% 100%;
+      overflow: hidden;
+      border-radius: 4px;
+      transform-origin: 50% 50%;
+      transition: filter 0.18s ease, transform 0.22s cubic-bezier(0.2, 0.8, 0.25, 1);
+    }
+
+    .scene-progress-wrap:hover .scene-progress-bar,
+    .scene-progress-wrap.dragging .scene-progress-bar {
+      transform: scaleY(1.35);
+      filter: brightness(1.25);
+    }
+
+    .scene-progress-hover {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: calc(var(--hover-ratio, 0) * 100%);
+      background: rgba(230, 200, 255, 0.22);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.18s ease;
+    }
+
+    .scene-progress-wrap:hover .scene-progress-hover {
+      opacity: 1;
+    }
+
+    .scene-progress-wrap.dragging .scene-progress-hover {
+      opacity: 0;
+    }
+
+    .scene-progress-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 10px;
+      background: rgba(75, 15, 95, 0.55) url('02_motions/progress_gauge.png') repeat-x left center / auto 100%;
+      transition: width 0.25s cubic-bezier(0.2, 0.8, 0.25, 1);
+    }
+
+    .scene-progress-wrap.dragging .scene-progress-fill {
+      transition: none;
+    }
+
+    .scene-progress-fill::after {
+      content: '';
+      position: absolute;
+      top: 1px;
+      bottom: 1px;
+      right: 0;
+      width: 3px;
+      border-radius: 2px;
+      background: rgba(255, 240, 255, 0.9);
+      opacity: 0;
+      transition: opacity 0.18s ease;
+    }
+
+    .scene-progress-wrap:hover .scene-progress-fill::after,
+    .scene-progress-wrap.dragging .scene-progress-fill::after {
+      opacity: 1;
+      animation: progressMarkerPulse 1.2s ease-in-out infinite;
+    }
+
+    @keyframes progressMarkerPulse {
+      0%, 100% { opacity: 1; }
+      50%      { opacity: 0.45; }
+    }
