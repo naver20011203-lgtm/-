@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>知花冊房 (지화책방) - 비주얼 노벨</title>
+  <style>
+    @font-face {
+      font-family: 'DungGeunMo';
+      src: url('04_filters_fonts/DungGeunMo.otf') format('opentype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #110f1a;
+      color: #FFFAE1;
+      font-family: 'DungGeunMo', monospace, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* 배경 레이어 */
+    .bg-layer {
+      position: fixed;
+      inset: 0;
+      background: url('01_backgrounds/01.png') center center / cover no-repeat;
+      filter: brightness(0.65) saturate(1.1);
+      z-index: 0;
+    }
+
+    .color-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(69, 62, 114, 0.45);
+      mix-blend-mode: multiply;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .vignette {
+      position: fixed;
+      inset: 0;
+      box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.85);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* 메인 런처 카드 */
+    .launcher-card {
+      position: relative;
+      z-index: 10;
+      width: 92%;
+      max-width: 680px;
+      background: rgba(22, 19, 36, 0.88);
+      border: 3px solid #615CB7;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6), 0 0 24px rgba(97, 92, 183, 0.35);
+      border-radius: 12px;
+      padding: 44px 36px 36px;
+      text-align: center;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      animation: cardFadeIn 0.8s ease-out;
+    }
+
+    @keyframes cardFadeIn {
+      from { opacity: 0; transform: translateY(20px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 6px 14px;
+      background: #453E72;
+      color: #FFDB3B;
+      font-size: 13px;
+      letter-spacing: 2px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+      border: 1px solid rgba(255, 219, 59, 0.4);
+    }
+
+    h1.title {
+      font-size: 46px;
+      letter-spacing: 4px;
+      color: #FFDB3B;
+      text-shadow: 3px 3px 0 #1B4527, 0 0 20px rgba(255, 219, 59, 0.4);
+      margin-bottom: 10px;
+    }
+
+    p.subtitle {
+      font-size: 17px;
+      color: #E8E5FF;
+      line-height: 1.6;
+      margin-bottom: 32px;
+      opacity: 0.9;
+    }
+
+    .menu-group {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .btn-chapter {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 24px;
+      background: #1B4527;
+      color: #FFFAE1;
+      text-decoration: none;
+      border: 2px solid #57B570;
+      border-radius: 8px;
+      font-size: 20px;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-chapter:hover {
+      background: #235832;
+      border-color: #FFDB3B;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(35, 88, 50, 0.5), 0 0 12px rgba(255, 219, 59, 0.3);
+    }
+
+    .btn-chapter.chapter-2 {
+      background: #3B2A63;
+      border-color: #8C7DE6;
+    }
+
+    .btn-chapter.chapter-2:hover {
+      background: #4B377E;
+      border-color: #FFDB3B;
+      box-shadow: 0 6px 18px rgba(75, 55, 126, 0.5), 0 0 12px rgba(255, 219, 59, 0.3);
+    }
+
+    .btn-title {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: left;
+    }
+
+    .btn-main {
+      font-size: 20px;
+      font-weight: bold;
+      color: #FFFAE1;
+    }
+
+    .btn-desc {
+      font-size: 13px;
+      color: rgba(255, 250, 225, 0.75);
+      margin-top: 4px;
+    }
+
+    .btn-arrow {
+      font-size: 22px;
+      color: #FFDB3B;
+      transition: transform 0.2s ease;
+    }
+
+    .btn-chapter:hover .btn-arrow {
+      transform: translateX(6px);
+    }
+
+    .footer-links {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      font-size: 13px;
+      color: #8B87A8;
+      border-top: 1px solid rgba(97, 92, 183, 0.3);
+      padding-top: 20px;
+    }
+
+    .footer-links a {
+      color: #A9A4D8;
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+
+    .footer-links a:hover {
+      color: #FFDB3B;
+      text-decoration: underline;
+    }
+
+    .hint {
+      margin-top: 18px;
+      font-size: 12px;
+      color: #7B769B;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-layer"></div>
+  <div class="color-overlay"></div>
+  <div class="vignette"></div>
+
+  <main class="launcher-card">
+    <span class="badge">INTERACTIVE NOVEL</span>
+    <h1 class="title">知花冊房</h1>
+    <p class="subtitle">비 내리는 날, 골목 끝 기묘한 책방의 문을 두드리다</p>
+
+    <div class="menu-group">
+      <a href="S1.html" class="btn-chapter chapter-1">
+        <div class="btn-title">
+          <span class="btn-main">📖 제1화 : 비 오는 날의 방문 (S1)</span>
+          <span class="btn-desc">대기화면 빗소리 앰비언트 & 서점 비둘기와의 만남 (1~18번 장면)</span>
+        </div>
+        <span class="btn-arrow">▶</span>
+      </a>
+
+      <a href="S2.html" class="btn-chapter chapter-2">
+        <div class="btn-title">
+          <span class="btn-main">📚 제2화 : 지화책방 서가 탐방 (S2)</span>
+          <span class="btn-desc">따스한 실내 조명 & 4권의 도서 양쪽 펼침면 읽기 모드</span>
+        </div>
+        <span class="btn-arrow">▶</span>
+      </a>
+    </div>
+
+    <div class="footer-links">
+      <span>모듈형(CSS/JS 분리):</span>
+      <a href="s1_modular.html">1화 모듈형</a>
+      <span>•</span>
+      <a href="s2_modular.html">2화 모듈형</a>
+    </div>
+
+    <p class="hint">※ 1화를 끝까지 플레이하시면 자동으로 2화로 연결됩니다.</p>
+  </main>
+</body>
+</html>
